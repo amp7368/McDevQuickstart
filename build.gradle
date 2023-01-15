@@ -1,19 +1,41 @@
 plugins {
     id 'java'
+    // shadowJar dependency
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group artifactGroup
 version artifactVersion
 
+java.toolchain {
+    languageVersion.set(JavaLanguageVersion.of(18))
+}
+
 repositories {
     mavenCentral()
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
+    implementation 'co.aikar:acf-paper:0.5.1-SNAPSHOT'
 }
 
-test {
-    useJUnitPlatform()
+tasks.register('copyShadowJar') {
+    copy {
+        from shadowJar.getArchiveFile()
+        into file(serverBuildDir)
+    }
+    onlyIf {
+        !serverBuildDir.is('stubbed') & file(serverBuildDir).exists()
+    }
 }
+// build to ./build, then copy the jar file to where you want to
+shadowJar {
+    relocate 'co.aikar.commands', 'minecraft.example.mcdev.acf'
+    relocate 'co.aikar.locales', 'minecraft.example.mcdev.locales'
+
+    doLast { copyShadowJar }
+}
+

@@ -1,0 +1,5 @@
+name: McPlugin
+version: "1.0"
+authors:
+  - 'appleptr16'
+main: minecraft.example.mcdev.McDevPlugin
